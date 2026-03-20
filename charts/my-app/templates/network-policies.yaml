@@ -20,11 +20,11 @@ spec:
 
 ---
 
-# Rule 2: Protect the Backend
+# Update Rule 2: Protect the Backend
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ .Release.Name }}-allow-frontend-to-backend
+  name: {{ .Release.Name }}-allow-lb-to-backend
 spec:
   podSelector:
     matchLabels:
@@ -36,6 +36,11 @@ spec:
         - podSelector:
             matchLabels:
               app: frontend
+        # ADD THIS: Allow Google Load Balancer Health Checks
+        - ipBlock:
+            cidr: 130.211.0.0/22
+        - ipBlock:
+            cidr: 35.191.0.0/16
       ports:
         - protocol: TCP
           port: 5000

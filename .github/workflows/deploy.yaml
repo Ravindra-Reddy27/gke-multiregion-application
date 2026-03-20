@@ -56,17 +56,23 @@ jobs:
           docker build -t $IMAGE_PATH ./app/frontend
           docker push $IMAGE_PATH
 
-      # 6. Deploy: Update the Helm chart values and push back to Git [cite: 178]
+      # 6. Deploy: Update the Helm chart values and push back to Git
       - name: Update Helm Chart & Trigger ArgoCD
         run: |
-          # Use 'sed' to replace the dummy images with our brand new Artifact Registry images
-          sed -i "s|image: python:3.9-slim|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
-          sed -i "s|image: nginx:alpine|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
-          
-          # Commit the changes so ArgoCD sees them
+          # 1. Set up Git identity
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          git add charts/my-app/values.yaml
-          git commit -m "Deploy: Update image tags to ${{ env.IMAGE_TAG }}"
+          
+          # 2. PULL FIRST: Get the latest changes from GitHub before making any local modifications
           git pull origin main --rebase
-          git push
+          
+          # 3. Update the files with the new images
+          # (Using a broader wildcard '.*' here ensures it replaces the image even if a previous run already changed it from python:3.9-slim)
+          sed -i "s|image: .*backend.*|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
+          sed -i "s|image: .*frontend.*|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
+          
+          # 4. Commit and Push
+          git add charts/my-app/values.yaml
+          # The || echo command prevents the pipeline from failing if no changes were detected
+          git commit -m "Deploy: Update image tags to ${{ env.IMAGE_TAG }}" || echo "No changes to commit"
+          git push origin main

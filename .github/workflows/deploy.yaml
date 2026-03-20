@@ -56,23 +56,26 @@ jobs:
           docker build -t $IMAGE_PATH ./app/frontend
           docker push $IMAGE_PATH
 
-      # 6. Deploy: Update the Helm chart values and push back to Git
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: Update Helm Chart & Trigger ArgoCD
         run: |
-          # 1. Set up Git identity
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
-          
-          # 2. Update the files with the new images
+
+          git pull origin main --rebase
+
           sed -i "s|image: .*backend.*|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
           sed -i "s|image: .*frontend.*|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
-          
-          # 3. Commit the changes LOCALLY first
+
           git add charts/my-app/values.yaml
-          git commit -m "Deploy: Update image tags to ${{ env.IMAGE_TAG }}" || echo "No changes to commit"
-          
-          # 4. PULL REBASE: Fetch the latest remote changes and stack our local commit on top
-          git pull origin main --rebase
-          
-          # 5. Push the successfully stacked commits
-          git push origin main
+          git commit -m "Deploy: Update image tags to ${{ env.IMAGE_TAG }}" || echo "No changes"
+
+          for i in 1 2 3; do
+            git push origin main && break
+            echo "Push failed, retrying..."
+            git pull origin main --rebase
+          done

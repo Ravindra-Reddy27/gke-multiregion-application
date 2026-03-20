@@ -1,6 +1,7 @@
 FROM nginx:alpine
 
 COPY index.html /usr/share/nginx/html/
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# FIX: Copy to the templates directory instead of conf.d
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 
 EXPOSE 80

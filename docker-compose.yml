@@ -39,6 +39,8 @@ services:
   frontend:
     build:
       context: ./app/frontend
+    environment:
+      - BACKEND_HOST=backend # Keeps local Docker Compose working!
     ports:
       - "8081:80"
     depends_on:

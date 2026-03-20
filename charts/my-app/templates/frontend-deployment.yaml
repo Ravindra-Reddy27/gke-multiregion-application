@@ -15,5 +15,9 @@ spec:
       containers:
         - name: frontend
           image: {{ .Values.frontend.image }}
+          env:
+            # FIX: Tell Nginx the exact name of the Kubernetes service
+            - name: BACKEND_HOST
+              value: {{ .Release.Name }}-backend
           ports:
             - containerPort: 80

@@ -68,5 +68,5 @@ jobs:
           git config user.email "actions@github.com"
           git add charts/my-app/values.yaml
           git commit -m "Deploy: Update image tags to ${{ env.IMAGE_TAG }}"
-          git pull --rebase origin main
+          git pull origin main --rebase
           git push

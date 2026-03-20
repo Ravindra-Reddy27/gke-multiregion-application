@@ -3,6 +3,7 @@ kind: Deployment
 metadata:
   name: {{ .Release.Name }}-backend
 spec:
+  serviceAccountName: backend-ksa
   replicas: {{ .Values.backend.replicaCount }}
   selector:
     matchLabels:

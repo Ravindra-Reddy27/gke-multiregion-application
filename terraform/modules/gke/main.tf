@@ -37,7 +37,7 @@ resource "google_container_node_pool" "primary_nodes" {
   cluster    = google_container_cluster.primary.name
   project    = var.project_id
 
-  node_count = 1
+  node_count = var.node_count
   
  #This forces GKE to skip the default zones and create nodes in this zones.
   node_locations = var.node_zones

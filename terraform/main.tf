@@ -62,6 +62,7 @@ module "gke_primary" {
   source     = "./modules/gke"
   project_id = var.project_id
   region     = var.primary_region
+  node_count = 2
   network_id = module.vpc.network_id
   subnet_id  = module.vpc.primary_subnet_id
   node_zones = ["us-central1-b"]
@@ -76,6 +77,7 @@ module "gke_secondary" {
   source     = "./modules/gke"
   project_id = var.project_id
   region     = var.secondary_region
+  node_count = 1
   network_id = module.vpc.network_id
   subnet_id  = module.vpc.secondary_subnet_id
   node_zones = ["us-east1-d"]

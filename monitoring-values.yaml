@@ -1,0 +1,29 @@
+# Disable heavy features we don't need
+alertmanager:
+  enabled: false
+
+prometheusOperator:
+  # FIX: Tell the Operator not to look for the missing TLS secret
+  tls:
+    enabled: false
+  admissionWebhooks:
+    enabled: false
+    patch:
+      enabled: false
+
+# Keep our dashboard data sensors ON
+kubeStateMetrics:
+  enabled: true
+nodeExporter:
+  enabled: true
+
+# Keep Prometheus's memory footprint small
+prometheus:
+  prometheusSpec:
+    resources:
+      requests:
+        memory: 100Mi
+        cpu: 100m
+
+grafana:
+  enabled: true

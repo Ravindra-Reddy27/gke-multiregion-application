@@ -24,3 +24,8 @@ variable "node_zones" {
   type        = list(string)
   description = "A list of specific zones to deploy nodes into, bypassing stockouts."
 }
+
+variable "node_count" {
+  type = number
+  description = "Number of nodes"
+}

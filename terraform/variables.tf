@@ -16,3 +16,4 @@ variable "secondary_region" {
   type        = string
   default     = "us-east1"
 }
+

@@ -63,16 +63,16 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           
-          # 2. PULL FIRST: Get the latest changes from GitHub before making any local modifications
-          git pull origin main --rebase
-          
-          # 3. Update the files with the new images
-          # (Using a broader wildcard '.*' here ensures it replaces the image even if a previous run already changed it from python:3.9-slim)
+          # 2. Update the files with the new images
           sed -i "s|image: .*backend.*|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
           sed -i "s|image: .*frontend.*|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
           
-          # 4. Commit and Push
+          # 3. Commit the changes LOCALLY first
           git add charts/my-app/values.yaml
-          # The || echo command prevents the pipeline from failing if no changes were detected
           git commit -m "Deploy: Update image tags to ${{ env.IMAGE_TAG }}" || echo "No changes to commit"
+          
+          # 4. PULL REBASE: Fetch the latest remote changes and stack our local commit on top
+          git pull origin main --rebase
+          
+          # 5. Push the successfully stacked commits
           git push origin main

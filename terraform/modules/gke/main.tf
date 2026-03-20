@@ -44,7 +44,7 @@ resource "google_container_node_pool" "primary_nodes" {
 
   node_config {
     # e2-medium is a good cost-effective size for our sample app
-    machine_type = "e2-small"
+    machine_type = "e2-medium"
 
     # Attach our dedicated service account
     service_account = google_service_account.node_sa.email

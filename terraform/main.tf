@@ -38,7 +38,8 @@ resource "google_project_service" "required_services" {
   for_each = toset([
     "compute.googleapis.com",
     "container.googleapis.com",  
-    "iam.googleapis.com"
+    "iam.googleapis.com",
+    "artifactregistry.googleapis.com"
   ])
   service = each.key
   disable_dependent_services = true
@@ -82,6 +83,38 @@ module "gke_secondary" {
   depends_on = [
     google_project_service.required_services,
     module.gke_primary
+  ]
+}
+
+resource "google_project_iam_member" "artifact_registry_reader_us_central1" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:gke-node-sa-us-central1@gke-multiregion-application.iam.gserviceaccount.com"
+  depends_on = [
+    google_project_service.required_services,
+    module.gke_primary
+  ]
+}
+
+
+resource "google_project_iam_member" "artifact_registry_reader_us_east1" {
+  project = var.project_id
+  role    = "roles/artifactregistry.reader"
+  member  = "serviceAccount:gke-node-sa-us-east1@gke-multiregion-application.iam.gserviceaccount.com"
+  depends_on = [
+    google_project_service.required_services,
+    module.gke_secondary
+  ]
+}
+
+resource "google_artifact_registry_repository" "my_repo" {
+  project       = var.project_id
+  location      = var.primary_region
+  repository_id = "my-repo"
+  description   = "Docker repository for multi-tier app"
+  format        = "DOCKER"
+  depends_on = [
+    google_project_service.required_services
   ]
 }
 

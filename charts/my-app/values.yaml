@@ -1,11 +1,11 @@
 # Default configuration values for my-app
 frontend:
   # In the next phase, we will replace this with your Google Artifact Registry URL
-  image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/frontend:24d76cadc332dbfa2f281d3063fbf826db1aa7fe
+  image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/frontend:8aec1266ead3fc1e963187585e19d3348e4384fb
   replicaCount: 1
 
 backend:
-  image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/backend:24d76cadc332dbfa2f281d3063fbf826db1aa7fe
+  image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/backend:8aec1266ead3fc1e963187585e19d3348e4384fb
   replicaCount: 1
 
 database:

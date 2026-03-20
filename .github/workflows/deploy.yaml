@@ -1,0 +1,71 @@
+# .github/workflows/deploy.yaml
+name: Build, Push, and Deploy to ArgoCD
+
+# Trigger the pipeline whenever code is pushed to the main branch
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/**'
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}  
+  REGION: us-central1
+  AR_REPO: my-repo                 
+  # We use the unique Git commit ID as our Docker image tag
+  IMAGE_TAG: ${{ github.sha }}     
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout the source code [cite: 173]
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # 2. Authenticate to Google Cloud using the secret you added
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+
+      - name: Configure Docker Auth
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+      # 3. Test: Run a basic syntax check on our Python code [cite: 174]
+      - name: Run Unit Tests
+        run: |
+          cd app/backend
+          python -m py_compile app.py
+
+      # 4. Build and Push the Backend Image [cite: 175, 176]
+      - name: Build and Push Backend Image
+        run: |
+          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ env.IMAGE_TAG }}
+          docker build -t $IMAGE_PATH ./app/backend
+          docker push $IMAGE_PATH
+
+      # 5. Build and Push the Frontend Image [cite: 175, 176]
+      - name: Build and Push Frontend Image
+        run: |
+          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ env.IMAGE_TAG }}
+          docker build -t $IMAGE_PATH ./app/frontend
+          docker push $IMAGE_PATH
+
+      # 6. Deploy: Update the Helm chart values and push back to Git [cite: 178]
+      - name: Update Helm Chart & Trigger ArgoCD
+        run: |
+          # Use 'sed' to replace the dummy images with our brand new Artifact Registry images
+          sed -i "s|image: python:3.9-slim|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/backend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
+          sed -i "s|image: nginx:alpine|image: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPO }}/frontend:${{ env.IMAGE_TAG }}|g" charts/my-app/values.yaml
+          
+          # Commit the changes so ArgoCD sees them
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add charts/my-app/values.yaml
+          git commit -m "Deploy: Update image tags to ${{ env.IMAGE_TAG }}"
+          git push

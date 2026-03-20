@@ -22,7 +22,7 @@ def get_data():
     try:
         conn = get_db_connection()
         conn.close()
-        return jsonify({"message": "Successfully connected to the PostgreSQL database! "})
+        return jsonify({"message": "Successfully connected to the PostgreSQL database. "})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

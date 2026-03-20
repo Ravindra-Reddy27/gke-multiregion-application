@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    # Mandatory health check for the database
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: 
+      context: ./app/backend
+    environment:
+      DB_HOST: db
+      DB_NAME: appdb
+      DB_USER: postgres
+      DB_PASSWORD: secretpassword
+    ports:
+      - "5000:5000"
+    depends_on:
+      db:
+        condition: service_healthy
+    # Mandatory health check for the backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./app/frontend
+    ports:
+      - "8081:80"
+    depends_on:
+      backend:
+        condition: service_healthy

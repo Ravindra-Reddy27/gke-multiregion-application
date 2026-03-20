@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Tier GKE App</title>
+</head>
+<body>
+    <h1>Welcome to the Platform</h1>
+    <p>Backend Status: <span id="status">Loading...</span></p>
+
+    <script>
+        fetch('/api/data')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('status').innerText = data.message || data.error;
+            })
+            .catch(error => {
+                document.getElementById('status').innerText = 'Failed to connect to backend';
+            });
+    </script>
+</body>
+</html>

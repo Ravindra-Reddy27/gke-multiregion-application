@@ -1,0 +1,1 @@
+project_id = "gke-multiregion-application"

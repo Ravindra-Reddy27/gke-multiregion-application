@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-backend
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      # We will add the Workload Identity Service Account here in Phase 5
+      containers:
+        - name: backend
+          image: {{ .Values.backend.image }}
+          env:
+            - name: DB_HOST
+              value: {{ .Release.Name }}-database
+            - name: DB_NAME
+              value: {{ .Values.database.dbName }}
+            - name: DB_USER
+              value: {{ .Values.database.user }}
+            - name: DB_PASSWORD
+              value: {{ .Values.database.password }}
+          ports:
+            - containerPort: 5000

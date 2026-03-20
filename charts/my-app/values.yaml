@@ -2,11 +2,11 @@
 frontend:
   # In the next phase, we will replace this with your Google Artifact Registry URL
   image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/frontend:24d76cadc332dbfa2f281d3063fbf826db1aa7fe
-  replicaCount: 2
+  replicaCount: 1
 
 backend:
   image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/backend:24d76cadc332dbfa2f281d3063fbf826db1aa7fe
-  replicaCount: 2
+  replicaCount: 1
 
 database:
   image: postgres:15-alpine

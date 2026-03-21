@@ -170,3 +170,53 @@ resource "google_service_account_iam_member" "workload_identity_binding" {
   # The strict Workload Identity member format: serviceAccount:PROJECT_ID.svc.id.goog[NAMESPACE/KSA_NAME]
   member = "serviceAccount:${var.project_id}.svc.id.goog[default/backend-ksa]"
 }
+
+# Create a GCS Bucket for Velero Backups
+resource "google_storage_bucket" "velero_backups" {
+  name          = "${var.project_id}-velero-backups-vault"
+  location      = "US" # Multi-region for disaster recovery
+  force_destroy = true
+
+  uniform_bucket_level_access = true
+}
+
+# Install Velero via Helm
+resource "helm_release" "velero" {
+  name             = "velero"
+  repository       = "https://vmware-tanzu.github.io/helm-charts"
+  chart            = "velero"
+  namespace        = "velero"
+  create_namespace = true
+
+  # 1. Backup Storage Location (Where the files go)
+  set {
+    name  = "configuration.backupStorageLocation[0].provider"
+    value = "gcp"
+  }
+  set {
+    name  = "configuration.backupStorageLocation[0].name"
+    value = "default"
+  }
+  set {
+    name  = "configuration.backupStorageLocation[0].bucket"
+    value = google_storage_bucket.velero_backups.name
+  }
+
+  # 2. Enable snapshotting for Persistent Volumes (Database)
+  set {
+    name  = "snapshotsEnabled"
+    value = "true"
+  }
+
+  # 3. ADD THIS: Volume Snapshot Location (Who handles the physical disk)
+  set {
+    name  = "configuration.volumeSnapshotLocation[0].provider"
+    value = "gcp"
+  }
+  set {
+    name  = "configuration.volumeSnapshotLocation[0].name"
+    value = "default"
+  }
+
+  depends_on = [module.gke_primary, google_storage_bucket.velero_backups]
+}

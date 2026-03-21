@@ -1,8 +1,76 @@
-# Rule 1: Protect the Database
+# 1. Default Deny All Ingress (Satisfies Verification Check #1)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ .Release.Name }}-allow-backend-to-db
+  name: {{ .Release.Name }}-default-deny-ingress
+spec:
+  podSelector: {} # Empty selector means it applies to ALL pods
+  policyTypes:
+    - Ingress
+  # No ingress rule defined here means DENY ALL by default.
+
+---
+
+# 2. Allow Frontend to Backend (Satisfies Verification Check #2)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-allow-frontend-to-backend
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: frontend
+        # Allow Google Load Balancer Health Checks
+        - ipBlock:
+            cidr: 130.211.0.0/22
+        - ipBlock:
+            cidr: 35.191.0.0/16
+      ports:
+        - protocol: TCP
+          port: 5000
+
+---
+
+# 3. Allow Backend Egress to Database (Satisfies Verification Check #3)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-backend-egress
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app: database
+      ports:
+        - protocol: TCP
+          port: 5432
+    # CRITICAL: Allow DNS resolution so the backend can find the DB hostname!
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - protocol: UDP
+          port: 53
+
+---
+
+# 4. Allow Backend Ingress to Database (Needed because of the Default Deny)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Release.Name }}-allow-backend-to-db-ingress
 spec:
   podSelector:
     matchLabels:
@@ -20,27 +88,21 @@ spec:
 
 ---
 
-# Update Rule 2: Protect the Backend
+# 5. Allow Public Traffic to Frontend (Needed because of the Default Deny)
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ .Release.Name }}-allow-lb-to-backend
+  name: {{ .Release.Name }}-allow-public-to-frontend
 spec:
   podSelector:
     matchLabels:
-      app: backend
+      app: frontend
   policyTypes:
     - Ingress
   ingress:
     - from:
-        - podSelector:
-            matchLabels:
-              app: frontend
-        # ADD THIS: Allow Google Load Balancer Health Checks
         - ipBlock:
-            cidr: 130.211.0.0/22
-        - ipBlock:
-            cidr: 35.191.0.0/16
+            cidr: 0.0.0.0/0
       ports:
         - protocol: TCP
-          port: 5000
+          port: 80

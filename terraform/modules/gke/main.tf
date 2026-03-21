@@ -56,5 +56,10 @@ resource "google_container_node_pool" "primary_nodes" {
 
     # Tag the nodes so our VPC firewall rules apply to them
     tags = ["gke-node"]
+
+    # ADD THIS: Enable Workload Identity on the actual nodes
+    workload_metadata_config {
+      mode = "GKE_METADATA"
+    }
   }
 }

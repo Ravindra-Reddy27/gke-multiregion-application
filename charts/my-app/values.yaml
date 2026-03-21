@@ -2,11 +2,11 @@
 gcpProjectId: "gke-multiregion-application"
 frontend:
   # In the next phase, we will replace this with your Google Artifact Registry URL
-  image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/frontend:b0352cc6fdf17b03679b541344d7a33afcf54f34
+  image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/frontend:e75c074bb0c1f58de0174044fffecaa2fae22419
   replicaCount: 1
 
 backend:
-  image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/backend:b0352cc6fdf17b03679b541344d7a33afcf54f34
+  image: us-central1-docker.pkg.dev/gke-multiregion-application/my-repo/backend:e75c074bb0c1f58de0174044fffecaa2fae22419
   replicaCount: 1
 
 database:

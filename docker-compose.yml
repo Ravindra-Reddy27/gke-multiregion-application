@@ -31,7 +31,7 @@ services:
         condition: service_healthy
     # Mandatory health check for the backend
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
       interval: 15s
       timeout: 5s
       retries: 3

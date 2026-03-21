@@ -1,0 +1,28 @@
+{
+  "title": "Multi-Tier App Dashboard",
+  "panels": [
+    {
+      "title": "Total HTTP Requests (Backend)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(flask_http_request_total[5m]))",
+          "legendFormat": "Requests / Sec"
+        }
+      ]
+    },
+    {
+      "title": "Backend CPU Usage",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"release-name-backend-.*\"}[5m]))",
+          "legendFormat": "CPU Cores"
+        }
+      ]
+    }
+  ],
+  "schemaVersion": 38
+}

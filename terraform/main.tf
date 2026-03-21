@@ -153,3 +153,20 @@ resource "helm_release" "prometheus" {
 
   depends_on = [module.gke_primary] 
 }
+
+
+# 1. Create the Google Service Account (GSA) for the application
+resource "google_service_account" "app_gsa" {
+  account_id   = "multi-tier-app-gsa"
+  display_name = "GSA for Multi-Tier Application"
+  project      = var.project_id
+}
+
+# 2. Bind the GSA to the Kubernetes Service Account (KSA)
+resource "google_service_account_iam_member" "workload_identity_binding" {
+  service_account_id = google_service_account.app_gsa.name
+  role               = "roles/iam.workloadIdentityUser"
+  
+  # The strict Workload Identity member format: serviceAccount:PROJECT_ID.svc.id.goog[NAMESPACE/KSA_NAME]
+  member = "serviceAccount:${var.project_id}.svc.id.goog[default/backend-ksa]"
+}

@@ -13,9 +13,10 @@ def get_db_connection():
     )
     return conn
 
-@app.route('/health')
+@app.route('/')
 def health_check():
-    return jsonify({"status": "healthy"}), 200
+    # Google needs a 200 OK response to mark the pod as HEALTHY
+    return "OK", 200
 
 @app.route('/api/data')
 def get_data():

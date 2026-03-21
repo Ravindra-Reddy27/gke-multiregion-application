@@ -77,7 +77,7 @@ module "gke_secondary" {
   source     = "./modules/gke"
   project_id = var.project_id
   region     = var.secondary_region
-  node_count = 1
+  node_count = 2
   network_id = module.vpc.network_id
   subnet_id  = module.vpc.secondary_subnet_id
   node_zones = ["us-east1-d"]
@@ -133,5 +133,23 @@ resource "helm_release" "argocd" {
   version          = "5.46.7" # Use a stable chart version
 
   # Ensure the cluster exists before trying to install ArgoCD
+  depends_on = [module.gke_primary] 
+}
+
+# Install Prometheus and Grafana Stack
+resource "helm_release" "prometheus" {
+  name             = "prometheus"
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  chart            = "kube-prometheus-stack"
+  namespace        = "monitoring"
+  create_namespace = true
+  version          = "55.4.0" # Stable version
+
+  # This value ensures Prometheus watches for our ServiceMonitor
+  set {
+    name  = "prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues"
+    value = "false"
+  }
+
   depends_on = [module.gke_primary] 
 }

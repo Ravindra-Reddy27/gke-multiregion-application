@@ -1,0 +1,6 @@
+{
+  "gcpProjectId": "gke-multiregion-application",
+  "primaryRegion": "us-central1",
+  "secondaryRegion": "us-east1",
+  "artifactRegistryRepo": "my-repo"
+}

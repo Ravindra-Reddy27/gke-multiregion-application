@@ -18,7 +18,7 @@
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "targets": [
         {
-          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"release-name-backend-.*\"}[5m]))",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"multi-tier-app-backend-.*\"}[5m]))",
           "legendFormat": "CPU Cores"
         }
       ]
